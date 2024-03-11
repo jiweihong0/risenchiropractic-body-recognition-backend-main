@@ -182,13 +182,28 @@ app.get('/api/getText/:user_name', (req, res) => {
       res.status(404).json({ error: '找不到使用者資料夾' });
       return;
     }
+    function suggest(dataangle){
+      if(Math.abs(dataangle)>=10.0){
+        return "建議就醫";
+      }
+      else if(Math.abs(dataangle)>=5.0){
+        return "前往復健";
+      }
+      else{
+        return "繼續保持";
+      }
+    }
     const data = fs.readFileSync(dataPath, 'utf8');
     const dataangle = 90.0-parseFloat(data.split(' ')[0]);
-    const result = Math.abs(90.0-parseFloat(data.split(' ')[0]))>=10.0?"異常":"健康";
+    const result = Math.abs(90.0-parseFloat(data.split(' ')[0]))>=10.0?"脊椎彎曲":"健康";
+    // 讓我的suggest 分成三類 1.繼續保持 2.建議就醫 3.前往復健
+    const suggests = suggest(dataangle);
+
     const combinedata = {
       data: data,
       dataangle: dataangle,
-      result: result  
+      result: result,
+      suggest: suggests
     }
     res.status(200).json({
       message: '成功取得使用者資料',
