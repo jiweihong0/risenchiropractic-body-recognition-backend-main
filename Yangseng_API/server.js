@@ -6,6 +6,7 @@ const moment = require('moment');
 const { exec } = require('child_process');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger_output.json');
+const { log } = require('console');
 
 const app = express();
 const port = 3000;
@@ -215,6 +216,32 @@ app.get('/api/getText/:user_name', (req, res) => {
   }
 });
 
+
+// 我要要一個url 可以取得圖片
+
+// 設置靜態文件夾
+app.use(express.static(path.join(__dirname, '../user_images/')));
+
+
+
+// 處理取得圖片的請求
+app.get('/api/get-image/:id', (req, res) => {
+    const imageid = req.params.id; // 假設圖片名稱是動態的
+
+    // find the floder only png 
+    const userDir = path.join('../user_images/', imageid);
+    const imageFiles = fs.readdirSync(userDir).filter(file => file.endsWith('.png'));
+    const imageName = imageid+'/'+imageFiles; // 假設圖片名稱是固定的
+    
+    const imagePath = path.join(__dirname, '../user_images', imageName);
+
+    // 返回圖片
+    res.sendFile(imagePath);
+});
+
+
+
+
 app.get('/api/getDateImages/:user_name', (req, res) => {
   const user_name = req.params.user_name;
   const { datetime } = req.query;
@@ -253,6 +280,9 @@ app.get('/api/getDateImages/:user_name', (req, res) => {
     res.status(500).json({ error: '伺服器錯誤' });
   }
 });
+
+// show photo by url 
+
 
 app.post('/api/upimage', async (req, res) => {
   const { user_name, employee_name, f_image, b_image, l_image, r_image } = req.body;
@@ -321,6 +351,8 @@ app.post('/api/upimage', async (req, res) => {
     res.status(500).json({ error: '伺服器錯誤' });
   }
 });
+
+
 
 function execImageRecognition(employee_name, user_name, sidePoseDir, upPoseDir) {
   exec(`python main.py ${employee_name} ${user_name} ${sidePoseDir} ${upPoseDir}`, (error, stdout, stderr) => {
